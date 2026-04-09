@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Movie Zone</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial;
+    background: linear-gradient(135deg, #141e30, #243b55);
+    color: white;
+}
+
+/* Header */
+header {
+    text-align: center;
+    padding: 30px;
+}
+
+header h1 {
+    font-size: 40px;
+    text-shadow: 0 0 15px #00e6e6;
+    animation: glow 2s infinite alternate;
+}
+
+@keyframes glow {
+    from { text-shadow: 0 0 10px #00e6e6; }
+    to { text-shadow: 0 0 25px #00ffff; }
+}
+
+header p {
+    font-size: 18px;
+    opacity: 0.8;
+}
+
+/* Movie Grid */
+.movie-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+    padding: 20px;
+}
+
+/* Card */
+.movie-card {
+    backdrop-filter: blur(10px);
+    background: rgba(255,255,255,0.1);
+    border-radius: 15px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: 0.4s;
+}
+
+.movie-card:hover {
+    transform: scale(1.08);
+    box-shadow: 0 0 20px #00ffff;
+}
+
+.movie-card img {
+    width: 100%;
+    height: 350px;
+    object-fit: contain;
+}
+
+.movie-title {
+    text-align: center;
+    padding: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    background: rgba(0,0,0,0.6);
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🎬 Movie Zone</h1>
+    <p>Choose your favorite movie & share your experience</p>
+</header>
+
+<div class="movie-container">
+    
+
+    <div class="movie-card" onclick="openMovie('Titanic')">
+        <img src="https://image.tmdb.org/t/p/w500/9xjZS2rlVxm8SFx8kPC3aIGCOYQ.jpg">
+        <div class="movie-title">Titanic</div>
+    </div>
+
+    <div class="movie-card" onclick="openMovie('Avatar')">
+        <img src="https://m.media-amazon.com/images/I/41kTVLeW1CL._AC_.jpg">
+        <div class="movie-title">Avatar</div>
+    </div>
+
+    <div class="movie-card" onclick="openMovie('Avengers')">
+        <img src="https://m.media-amazon.com/images/I/71niXI3lxlL._AC_SL1024_.jpg">
+        <div class="movie-title">Avengers</div>
+    </div>
+
+    <div class="movie-card" onclick="openMovie('Joker')">
+        <img src="https://m.media-amazon.com/images/I/61gtGlalRvL._AC_SY679_.jpg">
+        <div class="movie-title">Joker</div>
+    </div>
+    
+    <div class="movie-card" onclick="openMovie('The Dark Knight')">
+        <img src="https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg">
+        <div class="movie-title">The Dark Knight</div>
+    </div>
+
+</div>
+
+<script>
+function openMovie(movie) {
+    window.location.href = "review.html?movie=" + movie;
+}
+</script>
+
+</body>
+</html>

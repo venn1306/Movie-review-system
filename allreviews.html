@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>All Reviews</title>
+<style>
+body {
+    font-family: Arial;
+    background: #111;
+    color: white;
+    padding: 20px;
+}
+
+.review-box {
+    background: #222;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+}
+</style>
+</head>
+
+<body>
+
+<h1 id="title"></h1>
+<div id="reviews"></div>
+
+<script>
+
+// GET MOVIE NAME
+const params = new URLSearchParams(location.search);
+const movie = params.get("movie");
+
+// SET TITLE
+document.getElementById("title").innerText = movie + " Reviews";
+
+// GET DATA
+let stored = JSON.parse(localStorage.getItem(movie)) || [];
+
+// SHOW REVIEWS
+const container = document.getElementById("reviews");
+
+if(stored.length === 0){
+    container.innerHTML = "<p>No reviews yet!</p>";
+}
+
+stored.forEach(r => {
+    let div = document.createElement("div");
+    div.className = "review-box";
+    div.innerHTML = `
+        <b>${r.name}</b> ⭐ ${r.rating}
+        <p>${r.review}</p>
+        <p>Recommend: ${r.recommend}</p>
+        <p>Watched via: ${r.format}</p>
+        ❤️ ${r.likes}
+    `;
+    container.appendChild(div);
+});
+
+</script>
+
+</body>
+</html>

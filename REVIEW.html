@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Movie Review</title>
+<style>
+body {
+    margin: 0;
+    font-family: Arial;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    color: white;
+}
+
+header {
+    text-align: center;
+    padding: 20px;
+}
+
+/* Movie Info */
+.movie-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin: 20px;
+    background: rgba(255,255,255,0.1);
+    padding: 20px;
+    border-radius: 15px;
+}
+
+.movie-info img {
+    width: 250px;
+    border-radius: 10px;
+}
+
+.details {
+    flex: 1;
+}
+
+.details p { margin: 6px 0; }
+
+/* Form */
+section {
+    margin: 20px;
+    padding: 20px;
+    border-radius: 15px;
+    background: rgba(255,255,255,0.1);
+}
+
+.stars span {
+    font-size: 30px;
+    cursor: pointer;
+    color: gray;
+}
+
+.stars span.active { color: gold; }
+
+input, textarea, select, button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 5px;
+    border: none;
+}
+
+button {
+    background: #ff9800;
+    color: white;
+    cursor: pointer;
+}
+
+/* Reviews */
+.review-box {
+    background: rgba(255,255,255,0.2);
+    padding: 10px;
+    margin: 10px 20px;
+    border-radius: 5px;
+}
+
+.like-btn { color: pink; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<header>
+    <h1 id="movieTitle"></h1>
+</header>
+
+<!-- Movie Info -->
+<div class="movie-info">
+    <img id="poster">
+    <div class="details">
+        <h2>Movie Details</h2>
+        <p id="desc"></p>
+        <p><b>🎭 Cast:</b> <span id="cast"></span></p>
+        <p><b>🎬 Director:</b> <span id="director"></span></p>
+        <p><b>🎞️ Genre:</b> <span id="genre"></span></p>
+        <p><b>🌍 Language:</b> <span id="language"></span></p>
+        <p><b>⏱️ Duration:</b> <span id="duration"></span></p>
+        <p><b>📅 Release:</b> <span id="year"></span></p>
+        <p><b>🏆 Awards:</b> <span id="awards"></span></p>
+        <p><b>📝 Total Reviews:</b> <span id="reviewCount"></span></p>
+    </div>
+</div>
+
+<!-- Review Form -->
+<section>
+    <h2>⭐ Give Your Rating</h2>
+    <input type="text" id="name" placeholder="Your Name">
+    <div class="stars" id="stars">
+        <span onclick="rate(1)">★</span>
+        <span onclick="rate(2)">★</span>
+        <span onclick="rate(3)">★</span>
+        <span onclick="rate(4)">★</span>
+        <span onclick="rate(5)">★</span>
+    </div>
+    <textarea id="review" placeholder="Write your review..."></textarea>
+    <select id="recommend">
+        <option value="">Would you recommend this movie?</option>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+    </select>
+    <select id="format">
+        <option value="">Watched via:</option>
+        <option value="Cinema">Cinema</option>
+        <option value="Streaming">Streaming</option>
+        <option value="DVD/Blu-ray">DVD/Blu-ray</option>
+    </select>
+    <button onclick="submitReview()">Submit Review</button>
+</section>
+
+<!-- Reviews Container -->
+<section>
+    <h2>⭐ Reviews</h2>
+
+    <!-- 👉 PASTE BUTTON HERE -->
+    <button onclick="viewAll()">View All Reviews</button>
+
+    <div id="reviewsContainer"></div>
+</section>
+
+<script>
+// Get movie from URL
+const params = new URLSearchParams(location.search);
+const movie = params.get("movie");
+
+// Movie Data
+const data = {
+
+    "Titanic": {
+        poster: "https://image.tmdb.org/t/p/w500/9xjZS2rlVxm8SFx8kPC3aIGCOYQ.jpg",
+        desc:"A love story aboard the Titanic ship.",
+        cast:"Leonardo DiCaprio, Kate Winslet",
+        director:"James Cameron",
+        genre:"Romance, Drama",
+        language:"English",
+        duration:"3h 14m",
+        year:"1997",
+        awards:"11 Academy Awards"
+}, 
+
+    "Avatar": {
+        poster:"https://m.media-amazon.com/images/I/41kTVLeW1CL._AC_.jpg",
+        desc:"A marine becomes part of an alien world.",
+        cast:"Sam Worthington, Zoe Saldana",
+        director:"James Cameron",
+        genre:"Fantasy, Adventure",
+        language:"English",
+        duration:"2h 42m",
+        year:"2009",
+        awards:"3 Academy Awards"
+    },
+    "Avengers": {
+        poster:"https://m.media-amazon.com/images/I/71niXI3lxlL._AC_SL1024_.jpg",
+        desc:"Earth’s heroes unite to save the world.",
+        cast:"Robert Downey Jr., Chris Evans",
+        director:"Joss Whedon",
+        genre:"Action, Superhero",
+        language:"English",
+        duration:"2h 23m",
+        year:"2012",
+        awards:"Blockbuster Hit"
+    },
+    "Joker": {
+        poster:"https://m.media-amazon.com/images/I/61gtGlalRvL._AC_SY679_.jpg",
+        desc:"A failed comedian turns into a criminal mastermind.",
+        cast:"Joaquin Phoenix",
+        director:"Todd Phillips",
+        genre:"Crime, Drama",
+        language:"English",
+        duration:"2h 2m",
+        year:"2019",
+        awards:"Oscar Winner (Best Actor)"
+    },
+    "The Dark Knight": {
+        poster: "https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg",
+        desc: "Batman faces the Joker, a criminal mastermind, in Gotham City.",
+        cast: "Christian Bale, Heath Ledger, Aaron Eckhart",
+        director: "Christopher Nolan",
+        genre: "Action, Crime, Drama",
+        language: "English",
+        duration: "2h 32m",
+        year: "2008",
+        awards: "Oscar Winner (Best Supporting Actor)"
+}
+};
+
+// Load movie info
+    if(data[movie]){
+    const d = data[movie];
+
+    document.getElementById("poster").src = d.poster;
+    document.getElementById("movieTitle").innerText = movie;
+    document.getElementById("desc").innerText = d.desc;
+    document.getElementById("cast").innerText = d.cast;
+    document.getElementById("director").innerText = d.director;
+    document.getElementById("genre").innerText = d.genre;
+    document.getElementById("language").innerText = d.language;
+    document.getElementById("duration").innerText = d.duration;
+    document.getElementById("year").innerText = d.year;
+    document.getElementById("awards").innerText = d.awards;
+    }
+ else {
+    document.getElementById("movieTitle").innerText = "Movie not found!";
+}
+
+// References
+const nameInput = document.getElementById("name");
+const reviewInput = document.getElementById("review");
+const starsContainer = document.getElementById("stars");
+const recommendInput = document.getElementById("recommend");
+const formatInput = document.getElementById("format");
+const reviewsContainer = document.getElementById("reviewsContainer");
+
+let selectedRating = 0;
+let stored = JSON.parse(localStorage.getItem(movie)) || [];
+
+// Star rating
+function rate(rating){
+    selectedRating = rating;
+    document.querySelectorAll("#stars span").forEach((s,i)=>{
+        s.classList.toggle("active", i<rating);
+    });
+}
+
+// Submit review
+function submitReview(){
+    let name = nameInput.value.trim();
+    let reviewText = reviewInput.value.trim();
+    let recommend = recommendInput.value;
+    let format = formatInput.value;
+
+    if(!name || !reviewText || !selectedRating){
+        alert("Please fill all required fields and select a rating!");
+        return;
+    }
+
+    stored.unshift({
+        name: name,
+        rating: selectedRating,
+        review: reviewText,
+        likes: 0,
+        recommend: recommend || "N/A",
+        format: format || "N/A"
+    });
+
+    localStorage.setItem(movie, JSON.stringify(stored));
+
+    // Clear form
+    nameInput.value = "";
+    reviewInput.value = "";
+    recommendInput.value = "";
+    formatInput.value = "";
+    selectedRating = 0;
+    document.querySelectorAll("#stars span").forEach(s=>s.classList.remove("active"));
+
+    updateReviews();
+    window.location.href = "allreviews.html?movie=" + movie;
+}
+
+// Display reviews
+function updateReviews(){
+    reviewsContainer.innerHTML = "";
+    document.getElementById("reviewCount").innerText = stored.length;
+    stored.forEach((r,i)=>{
+        const div = document.createElement("div");
+        div.className = "review-box";
+        if(i===0) div.style.border="2px solid gold";
+        div.innerHTML = `<b>${r.name}</b> ⭐ ${r.rating}
+            <p>${r.review}</p>
+            <p>Recommend: ${r.recommend}</p>
+            <p>Watched via: ${r.format}</p>
+            <span class="like-btn" onclick="like(${i})">❤️ ${r.likes}</span>`;
+        reviewsContainer.appendChild(div);
+    });
+}
+
+// Like function
+function like(index){
+    stored[index].likes++;
+    localStorage.setItem(movie, JSON.stringify(stored));
+    updateReviews();
+}
+
+// Initial display
+updateReviews();
+
+function viewAll(){  
+    window.location.href = "allreviews.html?movie=" + movie;  
+}
+</script>
+
+</body>
+</html>
