@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>All Movie Reviews</title>
-
 <style>
 body {
     font-family: Arial, sans-serif;
@@ -11,12 +10,20 @@ body {
     color: white;
     padding: 20px;
 }
+h1 { text-align: center; color: #00ffff; text-shadow: 0 0 8px #00ffff; }
 
-h1 {
-    text-align: center;
-    color: #00ffff;
-    text-shadow: 0 0 8px #00ffff;
+#viewBtn {
+    display: block;
+    margin: 30px auto;
+    padding: 12px 25px;
+    font-size: 18px;
+    background: #ff9800;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
 }
+#viewBtn:hover { background: orange; }
 
 .movie-block {
     background: rgba(255,255,255,0.1);
@@ -26,77 +33,125 @@ h1 {
 }
 
 .movie-block h2 {
+    margin-top: 0;
     color: #ff9800;
-    margin-bottom: 10px;
 }
 
 .review-box {
     background: rgba(255,255,255,0.2);
     padding: 12px;
-    margin: 10px 0;
+    margin: 12px 0;
     border-radius: 10px;
+    position: relative;
 }
+
+.review-box:hover { box-shadow: 0 0 15px #00ffff; }
 
 .like-btn {
     color: pink;
     cursor: pointer;
-    float: right;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+}
+
+.movie-poster {
+    width: 100px;
+    border-radius: 5px;
+    margin-right: 15px;
+    vertical-align: middle;
 }
 </style>
 </head>
 
 <body>
 
-<h1>🎬 All Movie Reviews</h1>
+<h1>All Movie Reviews</h1>
+<button id="viewBtn">View All Reviews</button>
 
 <div id="allReviews"></div>
 
 <script>
 
-// ✅ GET ALL REVIEWS FROM STORAGE
-let allReviews = JSON.parse(localStorage.getItem("allReviews")) || {};
+// SAME MOVIE LIST
+const movies = ["Titanic", "Avatar", "Avengers", "Joker", "The Dark Knight"];
+
+// POSTERS
+const data = {
+    "Titanic": {poster: "https://image.tmdb.org/t/p/w500/9xjZS2rlVxm8SFx8kPC3aIGCOYQ.jpg"},
+    "Avatar": {poster: "https://m.media-amazon.com/images/I/41kTVLeW1CL._AC_.jpg"},
+    "Avengers": {poster: "https://m.media-amazon.com/images/I/71niXI3lxlL._AC_SL1024_.jpg"},
+    "Joker": {poster: "https://m.media-amazon.com/images/I/61gtGlalRvL._AC_SY679_.jpg"},
+    "The Dark Knight": {poster: "https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg"}
+};
 
 const container = document.getElementById("allReviews");
+const viewBtn = document.getElementById("viewBtn");
 
-// check if empty
-let hasData = false;
+// LOAD ALL REVIEWS BUTTON
+viewBtn.addEventListener("click", () => {
+    renderAllReviews();
+    viewBtn.style.display = "none";
+});
 
-// loop through all movies
-for (let movie in allReviews) {
+// MAIN FUNCTION
+function renderAllReviews(){
 
-    hasData = true;
+    container.innerHTML = "";
 
-    // movie section
-    let movieBlock = document.createElement("div");
-    movieBlock.className = "movie-block";
+    // ✅ NEW STORAGE SYSTEM
+    let allReviews = JSON.parse(localStorage.getItem("allReviews")) || {};
 
-    let title = document.createElement("h2");
-    title.innerText = movie;
-    movieBlock.appendChild(title);
+    movies.forEach(movie => {
 
-    // loop reviews of that movie
-    allReviews[movie].forEach((r, i) => {
+        let reviews = allReviews[movie] || [];
 
-        let div = document.createElement("div");
-        div.className = "review-box";
+        if(reviews.length === 0) return;
 
-        div.innerHTML = `
-            <b>${r.name}</b> ⭐ ${r.rating}
-            <p>${r.review}</p>
-            <p>Recommend: ${r.recommend}</p>
-            <p>Watched via: ${r.format}</p>
-            ❤️ ${r.likes}
-        `;
+        const movieBlock = document.createElement("div");
+        movieBlock.className = "movie-block";
 
-        movieBlock.appendChild(div);
+        const titleDiv = document.createElement("h2");
+        titleDiv.innerHTML = `<img class="movie-poster" src="${data[movie].poster}"> ${movie}`;
+        movieBlock.appendChild(titleDiv);
+
+        reviews.forEach((r,i) => {
+
+            const reviewDiv = document.createElement("div");
+            reviewDiv.className = "review-box";
+
+            reviewDiv.innerHTML = `
+                <b>${r.name}</b> ⭐ ${r.rating}
+                <p>${r.review}</p>
+                <p>Recommend: ${r.recommend}</p>
+                <p>Watched via: ${r.format}</p>
+                <span class="like-btn" onclick="likeReview('${movie}', ${i})">❤️ ${r.likes}</span>
+            `;
+
+            movieBlock.appendChild(reviewDiv);
+        });
+
+        container.appendChild(movieBlock);
     });
 
-    container.appendChild(movieBlock);
+    if(container.innerHTML.trim() === ""){
+        container.innerHTML = "<p>No reviews yet for any movie!</p>";
+    }
 }
 
-// if no data
-if (!hasData) {
-    container.innerHTML = "<h2>No reviews yet 😢</h2>";
+// ❤️ LIKE FUNCTION (FIXED)
+function likeReview(movie, index){
+
+    let allReviews = JSON.parse(localStorage.getItem("allReviews")) || {};
+    let reviews = allReviews[movie] || [];
+
+    reviews[index].likes++;
+
+    allReviews[movie] = reviews;
+
+    localStorage.setItem("allReviews", JSON.stringify(allReviews));
+
+    renderAllReviews();
 }
 
 </script>
