@@ -1,71 +1,138 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>All Reviews</title>
+<meta charset="UTF-8">
+<title>All Movie Reviews</title>
 <style>
 body {
-    font-family: Arial;
-    background: #111;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
     color: white;
     padding: 20px;
 }
+h1 { text-align: center; color: #00ffff; text-shadow: 0 0 8px #00ffff; }
+
+#viewBtn {
+    display: block;
+    margin: 30px auto;
+    padding: 12px 25px;
+    font-size: 18px;
+    background: #ff9800;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+#viewBtn:hover { background: orange; }
+
+.movie-block {
+    background: rgba(255,255,255,0.1);
+    margin: 20px 0;
+    padding: 20px;
+    border-radius: 15px;
+}
+
+.movie-block h2 {
+    margin-top: 0;
+    color: #ff9800;
+}
 
 .review-box {
-    background: #222;
-    padding: 10px;
-    margin: 10px 0;
+    background: rgba(255,255,255,0.2);
+    padding: 12px;
+    margin: 12px 0;
+    border-radius: 10px;
+    position: relative;
+    transition: 0.3s;
+}
+.review-box:hover { box-shadow: 0 0 15px #00ffff; }
+
+.like-btn { color: pink; cursor: pointer; position: absolute; top: 12px; right: 12px; }
+
+.movie-poster {
+    width: 100px;
+    height: auto;
     border-radius: 5px;
+    margin-right: 15px;
+    vertical-align: middle;
+}
+.review-header {
+    display: flex;
+    align-items: center;
 }
 </style>
 </head>
-
 <body>
 
-<h1 id="title"></h1>
-<div id="reviews"></div>
+<h1>All Movie Reviews</h1>
+<button id="viewBtn">View All Reviews</button>
+<div id="allReviews"></div>
 
 <script>
+// List of all movies
+const movies = ["Titanic", "Avatar", "Avengers", "Joker", "The Dark Knight"];
 
-// GET MOVIE NAME
-const params = new URLSearchParams(location.search);
-const movie = params.get("movie");
+// Movie data for poster display
+const data = {
+    "Titanic": {poster: "https://image.tmdb.org/t/p/w500/9xjZS2rlVxm8SFx8kPC3aIGCOYQ.jpg"},
+    "Avatar": {poster: "https://m.media-amazon.com/images/I/41kTVLeW1CL._AC_.jpg"},
+    "Avengers": {poster: "https://m.media-amazon.com/images/I/71niXI3lxlL._AC_SL1024_.jpg"},
+    "Joker": {poster: "https://m.media-amazon.com/images/I/61gtGlalRvL._AC_SY679_.jpg"},
+    "The Dark Knight": {poster: "https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg"}
+};
 
-// SET TITLE
-document.getElementById("title").innerText = movie + " Reviews";
+const container = document.getElementById("allReviews");
+const viewBtn = document.getElementById("viewBtn");
 
+// Function to render all reviews
+function renderAllReviews() {
+    container.innerHTML = "";
+    movies.forEach(movie => {
+        let reviews = JSON.parse(localStorage.getItem(movie)) || [];
+        if(reviews.length === 0) return;
 
-// SHOW REVIEWS
-const container = document.getElementById("reviews");
+        const movieBlock = document.createElement("div");
+        movieBlock.className = "movie-block";
 
-if(stored.length === 0){
-    container.innerHTML = "<p>No reviews yet!</p>";
-}
+        const titleDiv = document.createElement("h2");
+        titleDiv.innerHTML = `<img class="movie-poster" src="${data[movie].poster}"> ${movie}`;
+        movieBlock.appendChild(titleDiv);
 
-let allReviews = JSON.parse(localStorage.getItem("allReviews")) || {};
-const container = document.getElementById("reviews");
+        reviews.forEach((r,i) => {
+            const reviewDiv = document.createElement("div");
+            reviewDiv.className = "review-box";
+            reviewDiv.innerHTML = `
+                <b>${r.name}</b> ⭐ ${r.rating}
+                <p>${r.review}</p>
+                <p>Recommend: ${r.recommend}</p>
+                <p>Watched via: ${r.format}</p>
+                <span class="like-btn" onclick="likeReview('${movie}', ${i})">❤️ ${r.likes}</span>
+            `;
+            movieBlock.appendChild(reviewDiv);
+        });
 
-for(let movie in allReviews){
-
-    // movie title heading
-    let title = document.createElement("h2");
-    title.innerText = movie;
-    container.appendChild(title);
-
-    // reviews under that movie
-    allReviews[movie].forEach(r => {
-        let div = document.createElement("div");
-        div.className = "review-box";
-        div.innerHTML = `
-            <b>${r.name}</b> ⭐ ${r.rating}
-            <p>${r.review}</p>
-            <p>Recommend: ${r.recommend}</p>
-            <p>Watched via: ${r.format}</p>
-            ❤️ ${r.likes}
-        `;
-        container.appendChild(div);
+        container.appendChild(movieBlock);
     });
+
+    if(container.innerHTML.trim() === "") {
+        container.innerHTML = "<p>No reviews yet for any movie!</p>";
+    }
 }
 
+// Like function
+function likeReview(movie, index) {
+    let reviews = JSON.parse(localStorage.getItem(movie)) || [];
+    reviews[index].likes++;
+    localStorage.setItem(movie, JSON.stringify(reviews));
+    renderAllReviews();
+}
+
+// Event listener for the button
+viewBtn.addEventListener("click", () => {
+    renderAllReviews();
+    viewBtn.style.display = "none"; // Hide button after click
+});
 </script>
 
 </body>
