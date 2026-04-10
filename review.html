@@ -232,8 +232,11 @@ const formatInput = document.getElementById("format");
 const reviewsContainer = document.getElementById("reviewsContainer");
 
 let selectedRating = 0;
-let stored = JSON.parse(localStorage.getItem(movie)) || [];
+let allReviews = JSON.parse(localStorage.getItem("allReviews")) || {};
 
+if(!allReviews[movie]){
+    allReviews[movie] = [];
+}
 // Star rating
 function rate(rating){
     selectedRating = rating;
@@ -244,18 +247,25 @@ function rate(rating){
 
 // Submit review
 function submitReview(){
+
     let name = nameInput.value.trim();
     let reviewText = reviewInput.value.trim();
     let recommend = recommendInput.value;
     let format = formatInput.value;
 
     if(!name || !reviewText || !selectedRating){
-        alert("Please fill all required fields and select a rating!");
+        alert("Please fill all fields!");
         return;
     }
 
-    stored.unshift({
-        name: name,
+    let allReviews = JSON.parse(localStorage.getItem("allReviews")) || {};
+
+    if(!allReviews[movie]){
+        allReviews[movie] = [];
+    }
+
+    allReviews[movie].unshift({
+        name,
         rating: selectedRating,
         review: reviewText,
         likes: 0,
@@ -263,49 +273,53 @@ function submitReview(){
         format: format || "N/A"
     });
 
-    localStorage.setItem(movie, JSON.stringify(stored));
+    localStorage.setItem("allReviews", JSON.stringify(allReviews));
 
-    // Clear form
-    nameInput.value = "";
-    reviewInput.value = "";
-    recommendInput.value = "";
-    formatInput.value = "";
-    selectedRating = 0;
-    document.querySelectorAll("#stars span").forEach(s=>s.classList.remove("active"));
-
-    updateReviews();
-    reviewsContainer.scrollIntoView({behavior: "smooth"});
+    location.reload();
 }
 
 // Display reviews
 function updateReviews(){
+
     reviewsContainer.innerHTML = "";
-    document.getElementById("reviewCount").innerText = stored.length;
-    stored.forEach((r,i)=>{
+
+    let allReviews = JSON.parse(localStorage.getItem("allReviews")) || {};
+    let list = allReviews[movie] || [];
+
+    document.getElementById("reviewCount").innerText = list.length;
+
+    list.forEach((r,i)=>{
+
         const div = document.createElement("div");
         div.className = "review-box";
-        if(i===0) div.style.border="2px solid gold";
-        div.innerHTML = `<b>${r.name}</b> ⭐ ${r.rating}
+
+        if(i === 0) div.style.border = "2px solid gold";
+
+        div.innerHTML = `
+            <b>${r.name}</b> ⭐ ${r.rating}
             <p>${r.review}</p>
             <p>Recommend: ${r.recommend}</p>
             <p>Watched via: ${r.format}</p>
-            <span class="like-btn" onclick="like(${i})">❤️ ${r.likes}</span>`;
+            <span class="like-btn" onclick="like(${i})">❤️ ${r.likes}</span>
+        `;
+
         reviewsContainer.appendChild(div);
     });
-    document.getElementById("viewAllBtn").addEventListener("click", () => {
-    window.location.href = "allreviews.html?movie=" + movie;
-});
 }
 
 // Like function
 function like(index){
-    stored[index].likes++;
-    localStorage.setItem(movie, JSON.stringify(stored));
+
+    let allReviews = JSON.parse(localStorage.getItem("allReviews")) || {};
+
+    if(!allReviews[movie]) return;
+
+    allReviews[movie][index].likes++;
+
+    localStorage.setItem("allReviews", JSON.stringify(allReviews));
+
     updateReviews();
 }
-
-// Initial display
-updateReviews();
 
 function viewAll(){  
     window.location.href = "allreviews.html?movie=" + movie;  
