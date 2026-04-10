@@ -132,8 +132,8 @@ button {
 <section>
     <h2>⭐ Reviews</h2>
 
-    <!-- 👉 PASTE BUTTON HERE -->
-    <button onclick="viewAll()">View All Reviews</button>
+    <!-- View all reviews for this movie -->
+    <button id="viewAllBtn">View All Reviews</button>
 
     <div id="reviewsContainer"></div>
 </section>
@@ -254,25 +254,16 @@ function submitReview(){
         return;
     }
 
-    let allReviews = JSON.parse(localStorage.getItem("allReviews")) || {};
+    stored.unshift({
+        name: name,
+        rating: selectedRating,
+        review: reviewText,
+        likes: 0,
+        recommend: recommend || "N/A",
+        format: format || "N/A"
+    });
 
-// if movie doesn't exist yet, create empty array
-if(!allReviews[movie]) {
-    allReviews[movie] = [];
-}
-
-// add new review at top
-allReviews[movie].unshift({
-    name: name,
-    rating: selectedRating,
-    review: reviewText,
-    likes: 0,
-    recommend: recommend || "N/A",
-    format: format || "N/A"
-});
-
-// save back
-localStorage.setItem("allReviews", JSON.stringify(allReviews));
+    localStorage.setItem(movie, JSON.stringify(stored));
 
     // Clear form
     nameInput.value = "";
@@ -283,7 +274,7 @@ localStorage.setItem("allReviews", JSON.stringify(allReviews));
     document.querySelectorAll("#stars span").forEach(s=>s.classList.remove("active"));
 
     updateReviews();
-    window.location.href = "allreviews.html?movie=" + movie;
+    reviewsContainer.scrollIntoView({behavior: "smooth"});
 }
 
 // Display reviews
@@ -301,6 +292,9 @@ function updateReviews(){
             <span class="like-btn" onclick="like(${i})">❤️ ${r.likes}</span>`;
         reviewsContainer.appendChild(div);
     });
+    document.getElementById("viewAllBtn").addEventListener("click", () => {
+    window.location.href = "allreviews.html?movie=" + movie;
+});
 }
 
 // Like function
