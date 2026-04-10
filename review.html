@@ -254,16 +254,25 @@ function submitReview(){
         return;
     }
 
-    stored.unshift({
-        name: name,
-        rating: selectedRating,
-        review: reviewText,
-        likes: 0,
-        recommend: recommend || "N/A",
-        format: format || "N/A"
-    });
+    let allReviews = JSON.parse(localStorage.getItem("allReviews")) || {};
 
-    localStorage.setItem(movie, JSON.stringify(stored));
+// if movie doesn't exist yet, create empty array
+if(!allReviews[movie]) {
+    allReviews[movie] = [];
+}
+
+// add new review at top
+allReviews[movie].unshift({
+    name: name,
+    rating: selectedRating,
+    review: reviewText,
+    likes: 0,
+    recommend: recommend || "N/A",
+    format: format || "N/A"
+});
+
+// save back
+localStorage.setItem("allReviews", JSON.stringify(allReviews));
 
     // Clear form
     nameInput.value = "";
