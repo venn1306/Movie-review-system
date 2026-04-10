@@ -33,8 +33,6 @@ const movie = params.get("movie");
 // SET TITLE
 document.getElementById("title").innerText = movie + " Reviews";
 
-// GET DATA
-let stored = JSON.parse(localStorage.getItem(movie)) || [];
 
 // SHOW REVIEWS
 const container = document.getElementById("reviews");
@@ -43,18 +41,30 @@ if(stored.length === 0){
     container.innerHTML = "<p>No reviews yet!</p>";
 }
 
-stored.forEach(r => {
-    let div = document.createElement("div");
-    div.className = "review-box";
-    div.innerHTML = `
-        <b>${r.name}</b> ⭐ ${r.rating}
-        <p>${r.review}</p>
-        <p>Recommend: ${r.recommend}</p>
-        <p>Watched via: ${r.format}</p>
-        ❤️ ${r.likes}
-    `;
-    container.appendChild(div);
-});
+let allReviews = JSON.parse(localStorage.getItem("allReviews")) || {};
+const container = document.getElementById("reviews");
+
+for(let movie in allReviews){
+
+    // movie title heading
+    let title = document.createElement("h2");
+    title.innerText = movie;
+    container.appendChild(title);
+
+    // reviews under that movie
+    allReviews[movie].forEach(r => {
+        let div = document.createElement("div");
+        div.className = "review-box";
+        div.innerHTML = `
+            <b>${r.name}</b> ⭐ ${r.rating}
+            <p>${r.review}</p>
+            <p>Recommend: ${r.recommend}</p>
+            <p>Watched via: ${r.format}</p>
+            ❤️ ${r.likes}
+        `;
+        container.appendChild(div);
+    });
+}
 
 </script>
 
