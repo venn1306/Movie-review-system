@@ -16,7 +16,6 @@ header {
     padding: 20px;
 }
 
-/* Movie Info */
 .movie-info {
     display: flex;
     flex-wrap: wrap;
@@ -36,9 +35,6 @@ header {
     flex: 1;
 }
 
-.details p { margin: 6px 0; }
-
-/* Form */
 section {
     margin: 20px;
     padding: 20px;
@@ -51,7 +47,6 @@ section {
     cursor: pointer;
     color: gray;
 }
-
 .stars span.active { color: gold; }
 
 input, textarea, select, button {
@@ -68,7 +63,6 @@ button {
     cursor: pointer;
 }
 
-/* Reviews */
 .review-box {
     background: rgba(255,255,255,0.2);
     padding: 10px;
@@ -79,13 +73,13 @@ button {
 .like-btn { color: pink; cursor: pointer; }
 </style>
 </head>
+
 <body>
 
 <header>
     <h1 id="movieTitle"></h1>
 </header>
 
-<!-- Movie Info -->
 <div class="movie-info">
     <img id="poster">
     <div class="details">
@@ -102,7 +96,6 @@ button {
     </div>
 </div>
 
-<!-- Review Form -->
 <section>
     <h2>⭐ Give Your Rating</h2>
     <input type="text" id="name" placeholder="Your Name">
@@ -128,24 +121,20 @@ button {
     <button onclick="submitReview()">Submit Review</button>
 </section>
 
-<!-- Reviews Container -->
 <section>
     <h2>⭐ Reviews</h2>
-
-    <!-- View all reviews for this movie -->
-    <button id="viewAllBtn">View All Reviews</button>
-
+    <button onclick="goAll()">View All Reviews</button>
     <div id="reviewsContainer"></div>
 </section>
 
 <script>
-// Get movie from URL
+
+// GET MOVIE
 const params = new URLSearchParams(location.search);
 const movie = params.get("movie");
 
-// Movie Data
+// MOVIE DATA (same as yours)
 const data = {
-
     "Titanic": {
         poster: "https://image.tmdb.org/t/p/w500/9xjZS2rlVxm8SFx8kPC3aIGCOYQ.jpg",
         desc:"A love story aboard the Titanic ship.",
@@ -156,8 +145,7 @@ const data = {
         duration:"3h 14m",
         year:"1997",
         awards:"11 Academy Awards"
-}, 
-
+    },
     "Avatar": {
         poster:"https://m.media-amazon.com/images/I/41kTVLeW1CL._AC_.jpg",
         desc:"A marine becomes part of an alien world.",
@@ -204,10 +192,9 @@ const data = {
 }
 };
 
-// Load movie info
-    if(data[movie]){
+// LOAD MOVIE INFO
+if(data[movie]){
     const d = data[movie];
-
     document.getElementById("poster").src = d.poster;
     document.getElementById("movieTitle").innerText = movie;
     document.getElementById("desc").innerText = d.desc;
@@ -218,112 +205,78 @@ const data = {
     document.getElementById("duration").innerText = d.duration;
     document.getElementById("year").innerText = d.year;
     document.getElementById("awards").innerText = d.awards;
-    }
- else {
-    document.getElementById("movieTitle").innerText = "Movie not found!";
 }
 
-// References
-const nameInput = document.getElementById("name");
-const reviewInput = document.getElementById("review");
-const starsContainer = document.getElementById("stars");
-const recommendInput = document.getElementById("recommend");
-const formatInput = document.getElementById("format");
-const reviewsContainer = document.getElementById("reviewsContainer");
+// STORAGE FIX ✅
+let allReviews = JSON.parse(localStorage.getItem("allReviews")) || {};
+let stored = allReviews[movie] || [];
 
 let selectedRating = 0;
-let allReviews = JSON.parse(localStorage.getItem("allReviews")) || {};
 
-if(!allReviews[movie]){
-    allReviews[movie] = [];
-}
-// Star rating
-function rate(rating){
-    selectedRating = rating;
+function rate(r){
+    selectedRating = r;
     document.querySelectorAll("#stars span").forEach((s,i)=>{
-        s.classList.toggle("active", i<rating);
+        s.classList.toggle("active", i<r);
     });
 }
 
-// Submit review
 function submitReview(){
 
-    let name = nameInput.value.trim();
-    let reviewText = reviewInput.value.trim();
-    let recommend = recommendInput.value;
-    let format = formatInput.value;
+    let name = document.getElementById("name").value;
+    let review = document.getElementById("review").value;
 
-    if(!name || !reviewText || !selectedRating){
-        alert("Please fill all fields!");
+    if(!name || !review || !selectedRating){
+        alert("Fill all fields");
         return;
     }
 
-    let allReviews = JSON.parse(localStorage.getItem("allReviews")) || {};
-
-    if(!allReviews[movie]){
-        allReviews[movie] = [];
-    }
-
-    allReviews[movie].unshift({
+    stored.unshift({
         name,
         rating: selectedRating,
-        review: reviewText,
-        likes: 0,
-        recommend: recommend || "N/A",
-        format: format || "N/A"
+        review,
+        likes: 0
     });
 
+    allReviews[movie] = stored;
     localStorage.setItem("allReviews", JSON.stringify(allReviews));
 
     location.reload();
 }
 
-// Display reviews
 function updateReviews(){
 
-    reviewsContainer.innerHTML = "";
+    let container = document.getElementById("reviewsContainer");
+    container.innerHTML = "";
 
-    let allReviews = JSON.parse(localStorage.getItem("allReviews")) || {};
-    let list = allReviews[movie] || [];
+    document.getElementById("reviewCount").innerText = stored.length;
 
-    document.getElementById("reviewCount").innerText = list.length;
-
-    list.forEach((r,i)=>{
-
-        const div = document.createElement("div");
+    stored.forEach((r,i)=>{
+        let div = document.createElement("div");
         div.className = "review-box";
-
-        if(i === 0) div.style.border = "2px solid gold";
 
         div.innerHTML = `
             <b>${r.name}</b> ⭐ ${r.rating}
             <p>${r.review}</p>
-            <p>Recommend: ${r.recommend}</p>
-            <p>Watched via: ${r.format}</p>
             <span class="like-btn" onclick="like(${i})">❤️ ${r.likes}</span>
         `;
 
-        reviewsContainer.appendChild(div);
+        container.appendChild(div);
     });
 }
 
-// Like function
-function like(index){
-
-    let allReviews = JSON.parse(localStorage.getItem("allReviews")) || {};
-
-    if(!allReviews[movie]) return;
-
-    allReviews[movie][index].likes++;
-
+function like(i){
+    stored[i].likes++;
+    allReviews[movie] = stored;
     localStorage.setItem("allReviews", JSON.stringify(allReviews));
-
     updateReviews();
 }
 
-function viewAll(){  
-    window.location.href = "allreviews.html?movie=" + movie;  
+function goAll(){
+    window.location.href = "allreviews.html";
 }
+
+updateReviews();
+
 </script>
 
 </body>
